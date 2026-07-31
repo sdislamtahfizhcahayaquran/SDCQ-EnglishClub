@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Buku Absensi Digital</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --cover:#6E2A2A;
+    --cover-dark:#551F1F;
+    --paper:#F7F2E5;
+    --paper-line:#E3D8BC;
+    --ink:#2A2420;
+    --ink-soft:#7A6F5E;
+    --stempel:#3E4C8A;
+    --stempel-bg:#E4E7F3;
+    --hijau:#2F6B4F;
+    --hijau-bg:#E2EEE6;
+    --emas:#B8862E;
+    --emas-bg:#F3E7CC;
+    --merah:#A63B32;
+    --merah-bg:#F3E1DE;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:
+      repeating-linear-gradient(180deg, transparent, transparent 33px, var(--paper-line) 34px),
+      var(--paper);
+    color:var(--ink);
+    font-family:'Plus Jakarta Sans',sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  .app{max-width:1120px;margin:0 auto;padding:0 20px 90px;}
+
+  /* ---------------- cover band ---------------- */
+  .cover{
+    background:linear-gradient(155deg, var(--cover) 0%, var(--cover-dark) 100%);
+    margin:0 -20px 0;
+    padding:34px 20px 46px;
+    position:relative;
+    overflow:hidden;
+  }
+  .cover::before{ /* stitched edge */
+    content:"";position:absolute;left:0;right:0;bottom:0;height:6px;
+    background:repeating-linear-gradient(90deg, rgba(247,242,229,.35) 0 10px, transparent 10px 20px);
+  }
+  .cover-inner{max-width:1120px;margin:0 auto;display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:16px;}
+  .cover-eyebrow{display:block;font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:#E9C98A;margin-bottom:8px;}
+  .cover h1{font-family:'Fraunces',serif;font-weight:700;font-style:italic;font-size:34px;line-height:1.05;margin:0;color:var(--paper);}
+  .cover p{color:#DCC9A8;font-size:13.5px;margin:8px 0 0;max-width:420px;}
+  .config-warn{background:var(--merah-bg);color:var(--merah);border:1px solid var(--merah);border-radius:10px;padding:14px 16px;font-size:13.5px;line-height:1.55;max-width:440px;}
+  .config-warn code{background:rgba(0,0,0,.08);padding:1px 5px;border-radius:4px;font-family:'IBM Plex Mono',monospace;font-size:12px;}
+  .connect-form p{margin:0 0 10px;}
+  .connect-form .row{display:flex;gap:8px;}
+  .connect-form input[type=url]{flex:1;min-width:0;border:1px solid var(--merah);border-radius:7px;padding:8px 10px;font-size:13px;font-family:'IBM Plex Mono';background:#fff;color:var(--ink);}
+  .connect-form button{background:var(--merah);color:var(--paper);border:none;border-radius:7px;padding:8px 14px;font-size:13px;font-weight:700;cursor:pointer;font-family:'Plus Jakarta Sans';white-space:nowrap;}
+  .connected-badge{background:var(--hijau-bg);color:var(--hijau);border:1px solid var(--hijau);border-radius:10px;padding:10px 14px;font-size:12.5px;display:flex;align-items:center;gap:10px;}
+  .connected-badge button{background:none;border:none;color:var(--hijau);text-decoration:underline;cursor:pointer;font-size:12.5px;font-family:'Plus Jakarta Sans';font-weight:600;padding:0;}
+
+  /* ---------------- folder tabs ---------------- */
+  .tabs{display:flex;gap:6px;overflow-x:auto;padding:16px 0 0;margin-bottom:-1px;}
+  .tab-btn{
+    font-family:'Plus Jakarta Sans';font-weight:700;font-size:13.5px;
+    background:var(--emas-bg);color:var(--ink-soft);border:1px solid var(--paper-line);border-bottom:none;
+    padding:10px 20px 12px;border-radius:9px 9px 0 0;cursor:pointer;white-space:nowrap;
+    transform:translateY(3px);transition:transform .15s ease, background .15s ease;
+  }
+  .tab-btn:hover{transform:translateY(0);}
+  .tab-btn.active{background:var(--paper);color:var(--cover);transform:translateY(0);box-shadow:0 -2px 0 var(--emas) inset;border-color:var(--paper-line);}
+
+  /* ---------------- page (main card) ---------------- */
+  .page{
+    background:var(--paper);
+    border:1px solid var(--paper-line);
+    border-radius:0 12px 12px 12px;
+    padding:26px 26px 30px;
+    box-shadow:0 14px 30px -18px rgba(42,36,32,.35);
+  }
+
+  .toolbar{display:flex;flex-wrap:wrap;gap:20px;align-items:flex-end;margin-bottom:20px;padding-bottom:18px;border-bottom:2px dashed var(--paper-line);}
+  .field label{display:block;font-family:'IBM Plex Mono';font-size:10.5px;text-transform:uppercase;letter-spacing:.08em;color:var(--ink-soft);margin-bottom:6px;}
+  .field input[type=text]{font-family:'Plus Jakarta Sans';border:1px solid var(--paper-line);border-radius:8px;padding:9px 11px;font-size:14px;min-width:190px;background:#fff;color:var(--ink);}
+  .stepper{display:flex;align-items:center;border:1px solid var(--paper-line);border-radius:8px;overflow:hidden;background:#fff;}
+  .stepper button{background:var(--emas-bg);border:none;width:32px;height:36px;font-size:16px;cursor:pointer;color:var(--cover);font-weight:700;}
+  .stepper input{width:52px;border:none;text-align:center;font-family:'IBM Plex Mono';font-weight:600;font-size:14px;background:transparent;}
+  .stepper input:focus{outline:none;}
+  .view-switch{margin-left:auto;display:flex;border:1px solid var(--cover);border-radius:8px;overflow:hidden;}
+  .view-switch button{background:#fff;border:none;padding:10px 18px;font-size:13px;font-weight:700;cursor:pointer;color:var(--cover);font-family:'Plus Jakarta Sans';}
+  .view-switch button.active{background:var(--cover);color:var(--paper);}
+
+  .legend{display:flex;flex-wrap:wrap;gap:16px;font-size:12px;color:var(--ink-soft);margin:0 0 16px;}
+  .legend b{color:var(--ink);}
+
+  /* ---------------- register table ---------------- */
+  table.register{width:100%;border-collapse:collapse;}
+  table.register th{
+    font-family:'IBM Plex Mono';color:var(--ink-soft);font-size:10.5px;text-transform:uppercase;letter-spacing:.06em;
+    text-align:left;padding:0 10px 10px;font-weight:600;border-bottom:2px solid var(--ink);
+  }
+  table.register td{padding:10px 10px;border-bottom:1px solid var(--paper-line);font-size:14px;vertical-align:middle;}
+  td.no{color:var(--ink-soft);font-family:'IBM Plex Mono';font-size:12px;}
+  td.nama{font-weight:600;}
+  td.skor{font-family:'IBM Plex Mono',monospace;font-weight:700;text-align:center;font-size:15px;}
+
+  select.ind{
+    width:100%;border:1px solid var(--paper-line);border-radius:6px;padding:7px 6px;font-size:13px;font-family:'Plus Jakarta Sans';background:#fff;color:var(--ink);
+  }
+
+  /* the "stamp" select for kehadiran */
+  select.kehadiran{
+    width:100%;text-align:center;font-family:'Plus Jakarta Sans';font-weight:700;font-size:12.5px;
+    letter-spacing:.03em;text-transform:uppercase;padding:8px 4px;border-radius:20px 4px 20px 4px;
+    border:2px solid var(--stempel);color:var(--stempel);background:var(--stempel-bg);
+    transform:rotate(-1.5deg);cursor:pointer;
+  }
+  select.kehadiran.st-Hadir{border-color:var(--hijau);color:var(--hijau);background:var(--hijau-bg);transform:rotate(-1.5deg);}
+  select.kehadiran.st-Izin, select.kehadiran.st-Sakit{border-color:var(--emas);color:#8a6317;background:var(--emas-bg);transform:rotate(1.2deg);}
+  select.kehadiran.st-Alpa{border-color:var(--merah);color:var(--merah);background:var(--merah-bg);transform:rotate(-1deg);}
+
+  input.catatan{width:100%;border:1px solid var(--paper-line);border-radius:6px;padding:7px 8px;font-size:13px;font-family:'Plus Jakarta Sans';background:#fff;}
+
+  .save-row{display:flex;align-items:center;gap:16px;margin-top:22px;}
+  #saveBtn{
+    background:var(--cover);color:var(--paper);border:none;border-radius:8px 8px 8px 0;padding:12px 26px;
+    font-size:14px;font-weight:700;cursor:pointer;font-family:'Plus Jakarta Sans';box-shadow:3px 3px 0 var(--emas);
+    transition:transform .1s ease;
+  }
+  #saveBtn:active{transform:translate(2px,2px);box-shadow:1px 1px 0 var(--emas);}
+  #saveBtn:disabled{opacity:.45;cursor:default;box-shadow:none;}
+  #statusMsg{font-size:13px;color:var(--ink-soft);font-weight:600;}
+  #statusMsg.ok{color:var(--hijau);}
+  #statusMsg.err{color:var(--merah);}
+
+  /* ---------------- rekap view ---------------- */
+  .rekap-toolbar{display:flex;gap:14px;align-items:flex-end;margin-bottom:18px;}
+  select#mingguFilter{border:1px solid var(--paper-line);border-radius:8px;padding:9px 11px;font-family:'Plus Jakarta Sans';font-size:13px;background:#fff;}
+  .stat-card{display:flex;gap:0;flex-wrap:wrap;margin-bottom:20px;border:1px solid var(--paper-line);border-radius:10px;overflow:hidden;}
+  .stat{flex:1;min-width:130px;padding:16px 20px;border-right:1px solid var(--paper-line);}
+  .stat:last-child{border-right:none;}
+  .stat .num{font-family:'IBM Plex Mono';font-size:28px;font-weight:600;color:var(--cover);}
+  .stat .lbl{font-family:'IBM Plex Mono';font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--ink-soft);margin-top:2px;}
+  table.rekap{width:100%;border-collapse:collapse;font-size:13px;}
+  table.rekap th{background:var(--emas-bg);color:var(--ink);text-align:left;padding:9px 10px;font-size:10.5px;text-transform:uppercase;letter-spacing:.05em;font-family:'IBM Plex Mono';}
+  table.rekap td{padding:9px 10px;border-bottom:1px solid var(--paper-line);}
+  table.rekap tbody tr:hover{background:var(--emas-bg);}
+  .empty{color:var(--ink-soft);font-size:14px;padding:40px 4px;text-align:center;}
+
+  @media (max-width:640px){
+    .cover h1{font-size:26px;}
+    .page{padding:18px 16px 24px;}
+    .view-switch{margin-left:0;}
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <header class="cover">
+    <div class="cover-inner">
+      <div>
+        <span class="cover-eyebrow">Buku Digital · Tahun Ajaran Berjalan</span>
+        <h1>Absensi &amp; Penilaian Mingguan</h1>
+        <p>Catatan kehadiran dan sikap siswa, tersimpan langsung ke spreadsheet sekolah.</p>
+      </div>
+      <div id="configWarn"></div>
+    </div>
+  </header>
+
+  <nav class="tabs" id="classTabs"><div class="empty" style="padding:8px 4px;color:#DCC9A8;">Memuat daftar kelas…</div></nav>
+
+  <div class="page">
+    <div class="toolbar">
+      <div class="field">
+        <label>Guru Mapel</label>
+        <input type="text" id="guruInput" placeholder="Nama guru">
+      </div>
+      <div class="field">
+        <label>Minggu ke</label>
+        <div class="stepper">
+          <button id="mingguMinus" type="button">−</button>
+          <input type="number" id="mingguInput" value="1" min="1">
+          <button id="mingguPlus" type="button">+</button>
+        </div>
+      </div>
+      <div class="view-switch">
+        <button class="active" data-view="input" type="button">Input</button>
+        <button data-view="rekap" type="button">Rekap</button>
+      </div>
+    </div>
+
+    <section id="inputView">
+      <div class="legend">
+        <span><b>Kehadiran</b> — Hadir / Izin / Sakit / Alpa</span>
+        <span><b>Indikator lain</b> — Kurang · Cukup · Baik · Sangat Baik</span>
+        <span><b>Skor</b> = Kehadiran 30% + Keaktifan 25% + Kedisiplinan 15% + Tugas 20% + Sikap 10%</span>
+      </div>
+      <div id="rosterWrap"><div class="empty">Pilih kelas untuk mulai mengisi absensi.</div></div>
+      <div class="save-row">
+        <button id="saveBtn" disabled>Simpan ke Spreadsheet</button>
+        <span id="statusMsg"></span>
+      </div>
+    </section>
+
+    <section id="rekapView" hidden>
+      <div class="rekap-toolbar">
+        <div class="field">
+          <label>Filter Minggu</label>
+          <select id="mingguFilter"><option value="">Semua minggu</option></select>
+        </div>
+      </div>
+      <div id="statCard"></div>
+      <div id="rekapWrap"><div class="empty">Memuat rekap…</div></div>
+    </section>
+  </div>
+</div>
+
+<script>
+// =====================================================================
+// URL Apps Script — hardcoded langsung di sini sesuai permintaan.
+// Kalau suatu saat re-deploy Apps Script dan URL berubah, ganti nilai
+// di bawah ini.
+// =====================================================================
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzOi06DSlon3ZjxvMcrQEddV6YAovzAk3JvzI3tN2WA_NjqtcqCJ5b471DS5Ip8ltKGyQ/exec";
+
+const INDICATOR_SCALE = { 'Kurang': 50, 'Cukup': 70, 'Baik': 85, 'Sangat Baik': 100 };
+const KEHADIRAN_SCALE = { 'Hadir': 100, 'Izin': 75, 'Sakit': 75, 'Alpa': 0 };
+const WEIGHTS = { kehadiran: 0.30, keaktifan: 0.25, kedisiplinan: 0.15, tugas: 0.20, sikap: 0.10 };
+
+let state = { kelasList: [], activeKelas: null, siswaList: [], view: 'input' };
+
+function isConfigured(){ return SCRIPT_URL && !SCRIPT_URL.includes('PASTE_URL'); }
+
+async function apiGet(action, params={}){
+  const url = new URL(SCRIPT_URL);
+  url.searchParams.set('action', action);
+  Object.entries(params).forEach(([k,v]) => url.searchParams.set(k, v));
+  const res = await fetch(url.toString());
+  return res.json();
+}
+async function apiPost(action, data){
+  const res = await fetch(SCRIPT_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // avoids CORS preflight on Apps Script
+    body: JSON.stringify({ action, data })
+  });
+  return res.json();
+}
+
+function renderConfigWarning(){
+  document.getElementById('configWarn').innerHTML = '';
+}
+
+async function init(){
+  renderConfigWarning();
+  if (!isConfigured()){
+    document.getElementById('classTabs').innerHTML = '';
+    document.getElementById('rosterWrap').innerHTML = '<div class="empty">Sambungkan ke spreadsheet dulu di atas.</div>';
+    return;
+  }
+  try {
+    const { kelas, error } = await apiGet('getKelas');
+    if (error) throw new Error(error);
+    state.kelasList = kelas || [];
+    renderTabs();
+    if (state.kelasList.length) selectKelas(state.kelasList[0]);
+    else document.getElementById('rosterWrap').innerHTML = '<div class="empty">Sheet "Siswa" masih kosong. Isi kolom Kelas & Nama Siswa dulu.</div>';
+  } catch(err){
+    document.getElementById('classTabs').innerHTML = `<div class="empty" style="color:#DCC9A8;">Gagal memuat kelas: ${err.message}</div>`;
+  }
+}
+
+function renderTabs(){
+  const wrap = document.getElementById('classTabs');
+  wrap.innerHTML = '';
+  state.kelasList.forEach(k => {
+    const btn = document.createElement('button');
+    btn.className = 'tab-btn' + (k === state.activeKelas ? ' active' : '');
+    btn.textContent = k;
+    btn.onclick = () => selectKelas(k);
+    wrap.appendChild(btn);
+  });
+}
+
+async function selectKelas(kelas){
+  state.activeKelas = kelas;
+  renderTabs();
+  document.getElementById('rosterWrap').innerHTML = '<div class="empty">Memuat siswa…</div>';
+  document.getElementById('saveBtn').disabled = true;
+  const { siswa, error } = await apiGet('getSiswa', { kelas });
+  if (error){ document.getElementById('rosterWrap').innerHTML = `<div class="empty">${error}</div>`; return; }
+  state.siswaList = siswa || [];
+  renderRoster();
+  if (state.view === 'rekap') loadRekap();
+}
+
+function renderRoster(){
+  const wrap = document.getElementById('rosterWrap');
+  if (!state.siswaList.length){
+    wrap.innerHTML = '<div class="empty">Belum ada siswa terdaftar di kelas ini pada sheet "Siswa".</div>';
+    document.getElementById('saveBtn').disabled = true;
+    return;
+  }
+  const optKehadiran = Object.keys(KEHADIRAN_SCALE).map(s => `<option value="${s}">${s}</option>`).join('');
+  const optIndikator = Object.keys(INDICATOR_SCALE).map(s => `<option value="${s}">${s}</option>`).join('');
+  const rows = state.siswaList.map((nama, i) => `
+    <tr data-nama="${nama}">
+      <td class="no">${String(i+1).padStart(2,'0')}</td>
+      <td class="nama">${nama}</td>
+      <td><select class="kehadiran st-Hadir">${optKehadiran}</select></td>
+      <td><select class="ind" data-key="keaktifan">${optIndikator}</select></td>
+      <td><select class="ind" data-key="kedisiplinan">${optIndikator}</select></td>
+      <td><select class="ind" data-key="tugas">${optIndikator}</select></td>
+      <td><select class="ind" data-key="sikap">${optIndikator}</select></td>
+      <td class="skor">100</td>
+      <td><input type="text" class="catatan" placeholder="opsional"></td>
+    </tr>`).join('');
+  wrap.innerHTML = `
+    <table class="register">
+      <thead><tr><th>No</th><th>Nama Siswa</th><th>Kehadiran</th><th>Keaktifan</th><th>Kedisiplinan</th><th>Tugas</th><th>Sikap</th><th>Skor</th><th>Catatan</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table>`;
+  wrap.querySelectorAll('tr').forEach(tr => {
+    tr.querySelectorAll('select').forEach(sel => sel.addEventListener('change', () => onRowChange(tr)));
+    onRowChange(tr);
+  });
+  document.getElementById('saveBtn').disabled = false;
+}
+
+function onRowChange(tr){
+  const kehadiranSel = tr.querySelector('select.kehadiran');
+  kehadiranSel.className = 'kehadiran st-' + kehadiranSel.value.replace(' ', '');
+  const vals = {};
+  tr.querySelectorAll('select.ind').forEach(s => vals[s.dataset.key] = INDICATOR_SCALE[s.value]);
+  const kehadiranScore = KEHADIRAN_SCALE[kehadiranSel.value];
+  const skor = Math.round(
+    kehadiranScore * WEIGHTS.kehadiran +
+    vals.keaktifan * WEIGHTS.keaktifan +
+    vals.kedisiplinan * WEIGHTS.kedisiplinan +
+    vals.tugas * WEIGHTS.tugas +
+    vals.sikap * WEIGHTS.sikap
+  );
+  tr.querySelector('td.skor').textContent = skor;
+}
+
+async function saveAll(){
+  const guru = document.getElementById('guruInput').value.trim();
+  const minggu = document.getElementById('mingguInput').value;
+  const statusEl = document.getElementById('statusMsg');
+  if (!guru){ statusEl.textContent = 'Isi nama guru dulu.'; statusEl.className='err'; return; }
+
+  const rows = Array.from(document.querySelectorAll('#rosterWrap tbody tr')).map(tr => {
+    const kehadiran = tr.querySelector('select.kehadiran').value;
+    const vals = {};
+    tr.querySelectorAll('select.ind').forEach(s => vals[s.dataset.key] = s.value);
+    return {
+      kelas: state.activeKelas,
+      guru, minggu,
+      nama: tr.dataset.nama,
+      kehadiran,
+      keaktifan: vals.keaktifan,
+      kedisiplinan: vals.kedisiplinan,
+      tugas: vals.tugas,
+      sikap: vals.sikap,
+      skorTotal: tr.querySelector('td.skor').textContent,
+      catatan: tr.querySelector('input.catatan').value.trim()
+    };
+  });
+
+  const btn = document.getElementById('saveBtn');
+  btn.disabled = true; statusEl.textContent = 'Menyimpan…'; statusEl.className='';
+  try {
+    const res = await apiPost('simpanAbsensi', rows);
+    if (res.error) throw new Error(res.error);
+    statusEl.textContent = `Tersimpan: ${res.count} siswa, Minggu ${minggu}, ${state.activeKelas}.`;
+    statusEl.className = 'ok';
+  } catch(err){
+    statusEl.textContent = 'Gagal menyimpan: ' + err.message;
+    statusEl.className = 'err';
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+// ---- Rekap view ----
+async function loadRekap(){
+  const wrap = document.getElementById('rekapWrap');
+  wrap.innerHTML = '<div class="empty">Memuat rekap…</div>';
+  const { data, error } = await apiGet('getRekap', { kelas: state.activeKelas });
+  if (error){ wrap.innerHTML = `<div class="empty">${error}</div>`; return; }
+  state.rekapData = data || [];
+  populateMingguFilter();
+  renderRekap();
+}
+
+function populateMingguFilter(){
+  const sel = document.getElementById('mingguFilter');
+  const current = sel.value;
+  const weeks = Array.from(new Set(state.rekapData.map(r => String(r['Minggu'])))).sort((a,b)=>Number(a)-Number(b));
+  sel.innerHTML = '<option value="">Semua minggu</option>' + weeks.map(w => `<option value="${w}">Minggu ${w}</option>`).join('');
+  sel.value = weeks.includes(current) ? current : '';
+}
+
+function renderRekap(){
+  const filter = document.getElementById('mingguFilter').value;
+  const rows = state.rekapData.filter(r => !filter || String(r['Minggu']) === filter);
+  const statCard = document.getElementById('statCard');
+  const wrap = document.getElementById('rekapWrap');
+
+  if (!rows.length){
+    statCard.innerHTML = '';
+    wrap.innerHTML = '<div class="empty">Belum ada data untuk kelas/minggu ini.</div>';
+    return;
+  }
+
+  const avgSkor = Math.round(rows.reduce((s,r) => s + Number(r['Skor Total']||0), 0) / rows.length);
+  const alpaCount = rows.filter(r => r['Status Kehadiran'] === 'Alpa').length;
+  statCard.innerHTML = `
+    <div class="stat-card">
+      <div class="stat"><div class="num">${avgSkor}</div><div class="lbl">Rata-rata Skor</div></div>
+      <div class="stat"><div class="num">${rows.length}</div><div class="lbl">Total Entri</div></div>
+      <div class="stat"><div class="num">${alpaCount}</div><div class="lbl">Alpa</div></div>
+    </div>`;
+
+  const body = rows
+    .sort((a,b) => Number(b['Minggu']) - Number(a['Minggu']) || String(a['Nama Siswa']).localeCompare(String(b['Nama Siswa'])))
+    .map(r => `
+    <tr>
+      <td>${r['Nama Siswa']}</td>
+      <td>${r['Minggu']}</td>
+      <td>${r['Status Kehadiran']}</td>
+      <td>${r['Keaktifan']}</td>
+      <td>${r['Kedisiplinan']}</td>
+      <td>${r['Tugas']}</td>
+      <td>${r['Sikap']}</td>
+      <td><b>${r['Skor Total']}</b></td>
+      <td>${r['Guru']}</td>
+      <td>${r['Catatan'] || ''}</td>
+    </tr>`).join('');
+
+  wrap.innerHTML = `
+    <table class="rekap">
+      <thead><tr><th>Nama</th><th>Minggu</th><th>Kehadiran</th><th>Keaktifan</th><th>Kedisiplinan</th><th>Tugas</th><th>Sikap</th><th>Skor</th><th>Guru</th><th>Catatan</th></tr></thead>
+      <tbody>${body}</tbody>
+    </table>`;
+}
+
+// ---- events ----
+document.getElementById('mingguMinus').onclick = () => {
+  const inp = document.getElementById('mingguInput');
+  inp.value = Math.max(1, Number(inp.value) - 1);
+};
+document.getElementById('mingguPlus').onclick = () => {
+  const inp = document.getElementById('mingguInput');
+  inp.value = Number(inp.value) + 1;
+};
+document.getElementById('saveBtn').onclick = saveAll;
+document.getElementById('mingguFilter').addEventListener('change', renderRekap);
+document.querySelectorAll('.view-switch button').forEach(btn => {
+  btn.onclick = () => {
+    document.querySelectorAll('.view-switch button').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    state.view = btn.dataset.view;
+    document.getElementById('inputView').hidden = state.view !== 'input';
+    document.getElementById('rekapView').hidden = state.view !== 'rekap';
+    if (state.view === 'rekap' && state.activeKelas) loadRekap();
+  };
+});
+
+init();
+</script>
+</body>
+</html>
