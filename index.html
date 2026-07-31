@@ -118,7 +118,7 @@
   }
   select.kehadiran.st-Hadir{border-color:var(--hijau);color:var(--hijau);background:var(--hijau-bg);transform:rotate(-1.5deg);}
   select.kehadiran.st-Izin, select.kehadiran.st-Sakit{border-color:var(--emas);color:#8a6317;background:var(--emas-bg);transform:rotate(1.2deg);}
-  select.kehadiran.st-Alpa{border-color:var(--merah);color:var(--merah);background:var(--merah-bg);transform:rotate(-1deg);}
+  select.kehadiran.st-Alfa{border-color:var(--merah);color:var(--merah);background:var(--merah-bg);transform:rotate(-1deg);}
 
   input.catatan{width:100%;border:1px solid var(--paper-line);border-radius:6px;padding:7px 8px;font-size:13px;font-family:'Plus Jakarta Sans';background:#fff;}
 
@@ -148,6 +148,23 @@
   table.rekap tbody tr:hover{background:var(--emas-bg);}
   .empty{color:var(--ink-soft);font-size:14px;padding:40px 4px;text-align:center;}
 
+  /* ---------------- guru gate ---------------- */
+  .gate-wrap{max-width:460px;margin:26px auto 0;}
+  .gate-wrap .page{border-radius:12px;}
+  .gate-wrap h2{font-family:'Fraunces',serif;font-weight:600;font-size:19px;margin:0 0 4px;}
+  .gate-wrap .hint{font-size:12.5px;color:var(--ink-soft);margin:0 0 16px;}
+  .gate-row{display:flex;gap:8px;}
+  .gate-row input{flex:1;min-width:0;border:1px solid var(--paper-line);border-radius:8px;padding:11px 12px;font-size:14px;font-family:'Plus Jakarta Sans';background:#fff;color:var(--ink);}
+  .gate-row button{background:var(--cover);color:var(--paper);border:none;border-radius:8px 8px 8px 0;padding:11px 20px;font-size:13.5px;font-weight:700;cursor:pointer;font-family:'Plus Jakarta Sans';white-space:nowrap;box-shadow:3px 3px 0 var(--emas);}
+  .gate-row button:active{transform:translate(2px,2px);box-shadow:1px 1px 0 var(--emas);}
+  #guruGateMsg{margin-top:10px;font-size:13px;font-weight:600;color:var(--ink-soft);}
+  #guruGateMsg.err{color:var(--merah);}
+  .link-btn{background:none;border:none;color:var(--merah);text-decoration:underline;cursor:pointer;font-size:13px;font-family:'Plus Jakarta Sans';font-weight:700;padding:0;}
+
+  .guru-bar{display:flex;align-items:center;gap:8px;padding:14px 2px 0;font-size:13px;color:var(--ink-soft);}
+  .guru-bar b{color:var(--ink);}
+  .guru-bar button{background:none;border:none;color:var(--stempel);text-decoration:underline;cursor:pointer;font-size:13px;font-family:'Plus Jakarta Sans';font-weight:600;padding:0;}
+
   @media (max-width:640px){
     .cover h1{font-size:26px;}
     .page{padding:18px 16px 24px;}
@@ -169,51 +186,63 @@
     </div>
   </header>
 
-  <nav class="tabs" id="classTabs"><div class="empty" style="padding:8px 4px;color:#DCC9A8;">Memuat daftar kelas…</div></nav>
-
-  <div class="page">
-    <div class="toolbar">
-      <div class="field">
-        <label>Guru Mapel</label>
-        <input type="text" id="guruInput" placeholder="Nama guru">
+  <div class="gate-wrap" id="guruGate">
+    <div class="page">
+      <h2>Siapa nama Anda?</h2>
+      <p class="hint">Ketik nama guru — kelas yang Anda ajar akan otomatis muncul.</p>
+      <div class="gate-row">
+        <input type="text" id="guruGateInput" placeholder="Nama lengkap guru">
+        <button id="guruGateBtn" type="button">Tampilkan Kelas Saya</button>
       </div>
-      <div class="field">
-        <label>Minggu ke</label>
-        <div class="stepper">
-          <button id="mingguMinus" type="button">−</button>
-          <input type="number" id="mingguInput" value="1" min="1">
-          <button id="mingguPlus" type="button">+</button>
-        </div>
-      </div>
-      <div class="view-switch">
-        <button class="active" data-view="input" type="button">Input</button>
-        <button data-view="rekap" type="button">Rekap</button>
-      </div>
+      <div id="guruGateMsg"></div>
     </div>
+  </div>
 
-    <section id="inputView">
-      <div class="legend">
-        <span><b>Kehadiran</b> — Hadir / Izin / Sakit / Alpa</span>
-        <span><b>Indikator lain</b> — Kurang · Cukup · Baik · Sangat Baik</span>
-        <span><b>Skor</b> = Kehadiran 30% + Keaktifan 25% + Kedisiplinan 15% + Tugas 20% + Sikap 10%</span>
-      </div>
-      <div id="rosterWrap"><div class="empty">Pilih kelas untuk mulai mengisi absensi.</div></div>
-      <div class="save-row">
-        <button id="saveBtn" disabled>Simpan ke Spreadsheet</button>
-        <span id="statusMsg"></span>
-      </div>
-    </section>
+  <div id="mainArea" hidden>
+    <div class="guru-bar">Masuk sebagai <b id="guruLabel"></b> · <button id="gantiGuruBtn" type="button">Ganti nama</button></div>
 
-    <section id="rekapView" hidden>
-      <div class="rekap-toolbar">
+    <nav class="tabs" id="classTabs"></nav>
+
+    <div class="page">
+      <div class="toolbar">
         <div class="field">
-          <label>Filter Minggu</label>
-          <select id="mingguFilter"><option value="">Semua minggu</option></select>
+          <label>Minggu ke</label>
+          <div class="stepper">
+            <button id="mingguMinus" type="button">−</button>
+            <input type="number" id="mingguInput" value="1" min="1">
+            <button id="mingguPlus" type="button">+</button>
+          </div>
+        </div>
+        <div class="view-switch">
+          <button class="active" data-view="input" type="button">Input</button>
+          <button data-view="rekap" type="button">Rekap</button>
         </div>
       </div>
-      <div id="statCard"></div>
-      <div id="rekapWrap"><div class="empty">Memuat rekap…</div></div>
-    </section>
+
+      <section id="inputView">
+        <div class="legend">
+          <span><b>Kehadiran</b> — Hadir / Izin / Sakit / Alfa</span>
+          <span><b>Indikator lain</b> — Kurang · Cukup · Baik · Sangat Baik</span>
+          <span><b>Skor</b> = Kehadiran 30% + Keaktifan 25% + Kedisiplinan 15% + Tugas 20% + Sikap 10%</span>
+        </div>
+        <div id="rosterWrap"><div class="empty">Pilih kelas untuk mulai mengisi absensi.</div></div>
+        <div class="save-row">
+          <button id="saveBtn" disabled>Simpan ke Spreadsheet</button>
+          <span id="statusMsg"></span>
+        </div>
+      </section>
+
+      <section id="rekapView" hidden>
+        <div class="rekap-toolbar">
+          <div class="field">
+            <label>Filter Minggu</label>
+            <select id="mingguFilter"><option value="">Semua minggu</option></select>
+          </div>
+        </div>
+        <div id="statCard"></div>
+        <div id="rekapWrap"><div class="empty">Memuat rekap…</div></div>
+      </section>
+    </div>
   </div>
 </div>
 
@@ -226,12 +255,10 @@
 const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzOi06DSlon3ZjxvMcrQEddV6YAovzAk3JvzI3tN2WA_NjqtcqCJ5b471DS5Ip8ltKGyQ/exec";
 
 const INDICATOR_SCALE = { 'Kurang': 50, 'Cukup': 70, 'Baik': 85, 'Sangat Baik': 100 };
-const KEHADIRAN_SCALE = { 'Hadir': 100, 'Izin': 75, 'Sakit': 75, 'Alpa': 0 };
+const KEHADIRAN_SCALE = { 'Hadir': 100, 'Izin': 75, 'Sakit': 75, 'Alfa': 0 };
 const WEIGHTS = { kehadiran: 0.30, keaktifan: 0.25, kedisiplinan: 0.15, tugas: 0.20, sikap: 0.10 };
 
-let state = { kelasList: [], activeKelas: null, siswaList: [], view: 'input' };
-
-function isConfigured(){ return SCRIPT_URL && !SCRIPT_URL.includes('PASTE_URL'); }
+let state = { guru: '', kelasList: [], activeKelas: null, siswaList: [], view: 'input' };
 
 async function apiGet(action, params={}){
   const url = new URL(SCRIPT_URL);
@@ -249,27 +276,53 @@ async function apiPost(action, data){
   return res.json();
 }
 
-function renderConfigWarning(){
-  document.getElementById('configWarn').innerHTML = '';
+async function submitGuru(){
+  const val = document.getElementById('guruGateInput').value.trim();
+  const msgEl = document.getElementById('guruGateMsg');
+  if (!val){ msgEl.textContent = 'Isi nama dulu.'; msgEl.className = 'err'; return; }
+  msgEl.textContent = 'Mencari kelas…'; msgEl.className = '';
+  try {
+    const { kelas, error } = await apiGet('getKelasByGuru', { guru: val });
+    if (error) throw new Error(error);
+    if (!kelas || !kelas.length){
+      msgEl.innerHTML = 'Nama ini belum terdaftar mengajar kelas manapun di sheet <b>Guru</b>. <button id="lihatSemuaBtn" type="button" class="link-btn">Lihat semua kelas</button>';
+      msgEl.className = 'err';
+      document.getElementById('lihatSemuaBtn').onclick = () => startSession(val, null);
+      return;
+    }
+    startSession(val, kelas);
+  } catch(err){
+    msgEl.textContent = 'Gagal: ' + err.message;
+    msgEl.className = 'err';
+  }
 }
 
-async function init(){
-  renderConfigWarning();
-  if (!isConfigured()){
-    document.getElementById('classTabs').innerHTML = '';
-    document.getElementById('rosterWrap').innerHTML = '<div class="empty">Sambungkan ke spreadsheet dulu di atas.</div>';
+async function startSession(guru, kelasListOverride){
+  state.guru = guru;
+  document.getElementById('guruLabel').textContent = guru;
+  document.getElementById('guruGate').hidden = true;
+  document.getElementById('mainArea').hidden = false;
+
+  if (kelasListOverride){
+    state.kelasList = kelasListOverride;
+    renderTabs();
+    selectKelas(state.kelasList[0]);
     return;
   }
-  try {
-    const { kelas, error } = await apiGet('getKelas');
-    if (error) throw new Error(error);
-    state.kelasList = kelas || [];
-    renderTabs();
-    if (state.kelasList.length) selectKelas(state.kelasList[0]);
-    else document.getElementById('rosterWrap').innerHTML = '<div class="empty">Sheet "Siswa" masih kosong. Isi kolom Kelas & Nama Siswa dulu.</div>';
-  } catch(err){
-    document.getElementById('classTabs').innerHTML = `<div class="empty" style="color:#DCC9A8;">Gagal memuat kelas: ${err.message}</div>`;
-  }
+  document.getElementById('classTabs').innerHTML = '<div class="empty">Memuat semua kelas…</div>';
+  const { kelas, error } = await apiGet('getKelas');
+  if (error){ document.getElementById('classTabs').innerHTML = `<div class="empty">${error}</div>`; return; }
+  state.kelasList = kelas || [];
+  renderTabs();
+  if (state.kelasList.length) selectKelas(state.kelasList[0]);
+  else document.getElementById('rosterWrap').innerHTML = '<div class="empty">Sheet "Siswa" masih kosong. Isi kolom Kelas & Nama Siswa dulu.</div>';
+}
+
+function gantiGuru(){
+  document.getElementById('guruGate').hidden = false;
+  document.getElementById('mainArea').hidden = true;
+  document.getElementById('guruGateInput').value = state.guru || '';
+  document.getElementById('guruGateMsg').textContent = '';
 }
 
 function renderTabs(){
@@ -346,10 +399,10 @@ function onRowChange(tr){
 }
 
 async function saveAll(){
-  const guru = document.getElementById('guruInput').value.trim();
+  const guru = state.guru;
   const minggu = document.getElementById('mingguInput').value;
   const statusEl = document.getElementById('statusMsg');
-  if (!guru){ statusEl.textContent = 'Isi nama guru dulu.'; statusEl.className='err'; return; }
+  if (!guru){ statusEl.textContent = 'Sesi guru tidak ditemukan, muat ulang halaman.'; statusEl.className='err'; return; }
 
   const rows = Array.from(document.querySelectorAll('#rosterWrap tbody tr')).map(tr => {
     const kehadiran = tr.querySelector('select.kehadiran').value;
@@ -416,12 +469,12 @@ function renderRekap(){
   }
 
   const avgSkor = Math.round(rows.reduce((s,r) => s + Number(r['Skor Total']||0), 0) / rows.length);
-  const alpaCount = rows.filter(r => r['Status Kehadiran'] === 'Alpa').length;
+  const alfaCount = rows.filter(r => r['Status Kehadiran'] === 'Alfa').length;
   statCard.innerHTML = `
     <div class="stat-card">
       <div class="stat"><div class="num">${avgSkor}</div><div class="lbl">Rata-rata Skor</div></div>
       <div class="stat"><div class="num">${rows.length}</div><div class="lbl">Total Entri</div></div>
-      <div class="stat"><div class="num">${alpaCount}</div><div class="lbl">Alpa</div></div>
+      <div class="stat"><div class="num">${alfaCount}</div><div class="lbl">Alfa</div></div>
     </div>`;
 
   const body = rows
@@ -469,7 +522,11 @@ document.querySelectorAll('.view-switch button').forEach(btn => {
   };
 });
 
-init();
+document.getElementById('guruGateBtn').onclick = submitGuru;
+document.getElementById('guruGateInput').addEventListener('keydown', e => { if (e.key === 'Enter') submitGuru(); });
+document.getElementById('gantiGuruBtn').onclick = gantiGuru;
+document.getElementById('guruGateInput').focus();
+
 </script>
 </body>
 </html>
